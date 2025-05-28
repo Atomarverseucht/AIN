@@ -221,6 +221,9 @@ VALUES (4, 4, 100, 5, 'Ferienwohnung Zürich Oper', 90);
 INSERT INTO Ferienwohnung (feWoNr, adressNr, preisPT, anzahlZimmer, name_, groesse) 
 VALUES (6, 6, 100, 5, 'Ferienwohnung Barcelona', 90);
 
+INSERT INTO Ferienwohnung (feWoNr, adressNr, preisPT, anzahlZimmer, name_, groesse) 
+VALUES (7, 6, 100, 5, 'Ferienwohnung Barcelona aber guht', 90);
+
 -- Daten für Bild
 INSERT INTO Bild (url, feWoNr) 
 VALUES ('http://example.com/images/berlin_mitte.jpg', 1);
@@ -347,6 +350,8 @@ VALUES (10, 2, 'peter.meyer@example.com', TO_DATE('2025-11-10', 'YYYY-MM-DD'), T
 INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
 VALUES (11, 4, 'peter.meyer@example.com', TO_DATE('2025-11-10', 'YYYY-MM-DD'), TO_DATE('2025-12-01', 'YYYY-MM-DD'), TO_DATE('2025-12-08', 'YYYY-MM-DD'), NULL, 9, TO_DATE('2025-12-09', 'YYYY-MM-DD'), 840, '...', TO_DATE('2025-12-12', 'YYYY-MM-DD'), 1);
 
+INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
+VALUES (12, 7, 'peter.meyer@example.com', TO_DATE('2025-11-10', 'YYYY-MM-DD'), TO_DATE('2025-12-01', 'YYYY-MM-DD'), TO_DATE('2025-12-08', 'YYYY-MM-DD'), NULL, 10, TO_DATE('2025-12-09', 'YYYY-MM-DD'), 840, '...', TO_DATE('2025-12-12', 'YYYY-MM-DD'), 5);
 -- Daten für Anzahlung
 INSERT INTO Anzahlung (anzahlungsNr, buchungsNr, zahlungsDatum, betrag) 
 VALUES (1, 1, TO_DATE('2025-05-01', 'YYYY-MM-DD'), 200);
