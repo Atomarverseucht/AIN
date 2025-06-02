@@ -97,6 +97,29 @@ CREATE TABLE Buchung (
         CHECK (bewertSterne > 0 AND bewertSterne <= 5)
 );
 
+CREATE TABLE stornoBuchung(
+    buchungsNr INTEGER PRIMARY KEY,
+    feWoNr INTEGER NOT NULL,
+    kundenEmail VARCHAR2(100) NOT NULL,
+    buchungsZeit DATE NOT NULL,
+    startTag DATE NOT NULL,
+        CHECK (startTag > buchungsZeit),
+    endTag DATE NOT NULL,
+        CHECK (endTag > startTag + 2),
+    stornoZeit DATE NOT NULL,
+        CHECK (stornoZeit > buchungsZeit),
+    rechnungsNr INTEGER UNIQUE,
+    rechnungsDatum DATE ,
+        CHECK (rechnungsDatum > buchungsZeit),
+    betrag INTEGER NOT NULL,
+        CHECK (betrag > 0),
+    bewertText VARCHAR2(2000),
+    bewertDatum DATE,
+        CHECK (bewertDatum > endTag),
+    bewertSterne INTEGER,
+        CHECK (bewertSterne > 0 AND bewertSterne <= 5)
+);
+
 CREATE TABLE Anzahlung (
     anzahlungsNr INTEGER PRIMARY KEY,
     buchungsNr INTEGER NOT NULL,
@@ -143,6 +166,12 @@ ALTER TABLE Buchung
 ALTER TABLE Buchung
     ADD CONSTRAINT fk_buchung_kunde FOREIGN KEY (kundenEmail) REFERENCES Kunde(email);
 
+ALTER TABLE stornoBuchung
+    ADD CONSTRAINT fk_sbuchung_fewo FOREIGN KEY (feWoNr) REFERENCES Ferienwohnung(feWoNr); 
+
+ALTER TABLE stornoBuchung
+    ADD CONSTRAINT fk_sbuchung_kunde FOREIGN KEY (kundenEmail) REFERENCES Kunde(email);
+
 
 ALTER TABLE Anzahlung
     ADD CONSTRAINT fk_anz_buchung FOREIGN KEY (buchungsNr) REFERENCES Buchung(buchungsNr);
@@ -154,6 +183,8 @@ GRANT SELECT, UPDATE, DELETE ON Kunde to dbsys08;
 
 GRANT INSERT, SELECT, UPDATE ON Buchung to dbsys70;
 GRANT INSERT, SELECT, UPDATE ON Buchung TO dbsys08;
+
+GRANT INSERT, SELECT, UPDATE ON Buchung to dbsys70;
 
 GRANT SELECT ON Anzahlung TO dbsys70;
 GRANT SELECT, INSERT, UPDATE ON Anzahlung TO dbsys08;
@@ -358,17 +389,20 @@ VALUES (1, 1, TO_DATE('2025-05-01', 'YYYY-MM-DD'), 200);
 
 INSERT INTO Anzahlung (anzahlungsNr, buchungsNr, zahlungsDatum, betrag) 
 VALUES (2, 2, TO_DATE('2025-05-10', 'YYYY-MM-DD'), 300);
-
-/*SELECT *
-FROM dbsys08.Ferienwohnung
-WHERE anzahlZimmer > 3;
-
-SELECT *
-FROM dbsys08.Kunde
-WHERE istNewsletter = 't';
-
-SELECT *
-FROM dbsys08.Kunde, dbsys08.Buchung
-WHERE email = kundenEmail;*/
 COMMIT;
+
+-- TRIGGER
+CREATE TRIGGER loesch_Buchung BEFORE DELETE ON Buchung 
+FOR EACH ROW BEGIN 
+    DELETE Anzahlung a WHERE a.BUCHUNGSNR = :OLD.buchungsNr;
+    IF :OLD.buchungsNr NOT IN (
+        SELECT s.buchungsnr FROM stornoBuchung s
+    ) THEN
+        INSERT INTO stornoBuchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
+        VALUES (:OLD.buchungsNr, :OLD.feWoNr, :OLD.kundenEmail, :OLD.buchungsZeit, :OLD.startTag, :OLD.endTag, SYSDATE, :OLD.rechnungsNr, :OLD.rechnungsDatum, :OLD.betrag, :OLD.bewertText, :OLD.bewertDatum, :OLD.bewertSterne);
+    END IF;
+    
+END;
+/
+
 

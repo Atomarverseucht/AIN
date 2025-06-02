@@ -30,10 +30,10 @@ SELECT ad.ort, COUNT(*) FROM dbsys08.FERIENWOHNUNG fw, dbsys08.ADRESSE ad WHERE 
 
 -- g: fewo nur mit 1 oder 2 Sterne - Bewertungen
 SELECT fewoNr FROM dbsys08.Buchung b WHERE fewoNR NOT IN (
-    SELECT FEWONR FROM dbsys08.Buchung bu WHERE bu.BEWERTSTERNE > 2 OR bu.BEWERTSTERNE = NULL);
+    SELECT FEWONR FROM dbsys08.Buchung bu WHERE bu.BEWERTSTERNE > 2);
 
 -- h: spanische fewos mit Sauna, welche zwischen 01.05.2024 - 21.05.2024 frei sind, sortiert nach Bewertung
-SELECT fw.name_, NVL(AVG(b.BEWERTSTERNE),0) AS Durchschnitt 
+SELECT fw.name_, AVG(b.BEWERTSTERNE) AS Durchschnitt 
     FROM dbsys08.Ferienwohnung fw
     INNER JOIN dbsys08.WOHNUNGSAUSSTATTUNG wa ON fw.FEWONR = wa.FEWONR
     INNER JOIN dbsys08.ADRESSE ad ON fw.adressNr = ad.ADRESSNR
@@ -41,7 +41,9 @@ SELECT fw.name_, NVL(AVG(b.BEWERTSTERNE),0) AS Durchschnitt
     WHERE ad.LANDNAME = 'Spanien' AND wa.AUSSTNAME = 'Sauna' AND fw.FEWONR NOT IN (
         SELECT b1.fewoNR FROM dbsys08.Buchung b1
             WHERE NOT(endtag < TO_DATE('2024-05-01', 'YYYY-MM-DD') OR b1.STARTTAG > (TO_DATE('2024-05-21', 'YYYY-MM-DD'))))
-    GROUP BY fw.name_ ORDER BY Durchschnitt DESC;
+    GROUP BY fw.name_ ORDER BY NVL(Durchschnitt, 0) DESC;
     
-
+-- AB HIER Aufgabe6:
+DELETE FROM Buchung b WHERE b.kundenEmail = 'peter.meyer@example.com';
+SELECt * FROM stornoBuchung;
 -- start = TO_DATE('2025-05-01', 'YYYY-MM-DD'), ende = TO_DATE('2025-05-21', 'YYYY-MM-DD')
