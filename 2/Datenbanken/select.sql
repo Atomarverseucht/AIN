@@ -1,4 +1,3 @@
--- a: Ferienwohnungen ohne Buchung
 SElECT fw.* FROM dbsys08.Ferienwohnung fw
     WHERE fw.feWoNr NOT IN (
         SELECT b.fewoNr FROM dbsys08.Buchung b); --a
