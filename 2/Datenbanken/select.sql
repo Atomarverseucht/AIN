@@ -43,6 +43,6 @@ SELECT fw.name_, AVG(b.BEWERTSTERNE) AS Durchschnitt
     GROUP BY fw.name_ ORDER BY NVL(Durchschnitt, 0) DESC;
     
 -- AB HIER Aufgabe6:
-DELETE FROM Buchung b WHERE b.kundenEmail = 'peter.meyer@example.com';
-SELECt * FROM stornoBuchung;
+DELETE FROM Buchung b WHERE b.kundenEmail = 'peter.meyer@example.com'  AND b.ENDTAG < SYSDATE;
+SELECt * FROM Buchung b WHERE b.kundenEmail = 'peter.meyer@example.com' AND b.ENDTAG < SYSDATE;
 -- start = TO_DATE('2025-05-01', 'YYYY-MM-DD'), ende = TO_DATE('2025-05-21', 'YYYY-MM-DD')

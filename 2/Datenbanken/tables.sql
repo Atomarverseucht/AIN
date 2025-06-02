@@ -97,8 +97,8 @@ CREATE TABLE Buchung (
         CHECK (bewertSterne > 0 AND bewertSterne <= 5)
 );
 
-CREATE TABLE stornoBuchung(
-    buchungsNr INTEGER PRIMARY KEY,
+CREATE TABLE stornoBuchung (
+    sbuchungsNr INTEGER PRIMARY KEY,
     feWoNr INTEGER NOT NULL,
     kundenEmail VARCHAR2(100) NOT NULL,
     buchungsZeit DATE NOT NULL,
@@ -106,10 +106,10 @@ CREATE TABLE stornoBuchung(
         CHECK (startTag > buchungsZeit),
     endTag DATE NOT NULL,
         CHECK (endTag > startTag + 2),
-    stornoZeit DATE NOT NULL,
+    stornoZeit DATE,
         CHECK (stornoZeit > buchungsZeit),
     rechnungsNr INTEGER UNIQUE,
-    rechnungsDatum DATE ,
+    rechnungsDatum DATE,
         CHECK (rechnungsDatum > buchungsZeit),
     betrag INTEGER NOT NULL,
         CHECK (betrag > 0),
@@ -184,7 +184,7 @@ GRANT SELECT, UPDATE, DELETE ON Kunde to dbsys08;
 GRANT INSERT, SELECT, UPDATE ON Buchung to dbsys70;
 GRANT INSERT, SELECT, UPDATE ON Buchung TO dbsys08;
 
-GRANT INSERT, SELECT, UPDATE ON Buchung to dbsys70;
+GRANT INSERT, SELECT, UPDATE ON stornoBuchung to dbsys70;
 
 GRANT SELECT ON Anzahlung TO dbsys70;
 GRANT SELECT, INSERT, UPDATE ON Anzahlung TO dbsys08;
@@ -367,7 +367,7 @@ INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, en
 VALUES (6, 2, 'max.mustermann@example.com', TO_DATE('2025-02-20', 'YYYY-MM-DD'), TO_DATE('2025-03-10', 'YYYY-MM-DD'), TO_DATE('2025-03-17', 'YYYY-MM-DD'), TO_DATE('2025-03-01', 'YYYY-MM-DD'), 12349, TO_DATE('2025-03-18', 'YYYY-MM-DD'), 840, NULL, NULL, NULL);
 
 INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne) 
-VALUES (7, 3, 'anna.schmidt@example.com', TO_DATE('2025-06-01', 'YYYY-MM-DD'), TO_DATE('2025-07-20', 'YYYY-MM-DD'), TO_DATE('2025-07-25', 'YYYY-MM-DD'), NULL, 12350, TO_DATE('2025-07-26', 'YYYY-MM-DD'), 750, 'Sehr sauber und gute Lage!', TO_DATE('2025-07-28', 'YYYY-MM-DD'), 5);
+VALUES (7, 3, 'anna.schmidt@example.com', TO_DATE('2024-06-01', 'YYYY-MM-DD'), TO_DATE('2024-07-20', 'YYYY-MM-DD'), TO_DATE('2024-07-25', 'YYYY-MM-DD'), NULL, 12350, TO_DATE('2025-07-26', 'YYYY-MM-DD'), 750, 'Sehr sauber und gute Lage!', TO_DATE('2025-07-28', 'YYYY-MM-DD'), 5);
 
 INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne) 
 VALUES (8, 1, 'peter.meyer@example.com', TO_DATE('2025-01-10', 'YYYY-MM-DD'), TO_DATE('2025-02-01', 'YYYY-MM-DD'), TO_DATE('2025-02-10', 'YYYY-MM-DD'), NULL, 12351, TO_DATE('2025-02-11', 'YYYY-MM-DD'), 720, 'Gemütlich und günstig!', TO_DATE('2025-02-13', 'YYYY-MM-DD'), 4);
@@ -395,12 +395,8 @@ COMMIT;
 CREATE TRIGGER loesch_Buchung BEFORE DELETE ON Buchung 
 FOR EACH ROW BEGIN 
     DELETE Anzahlung a WHERE a.BUCHUNGSNR = :OLD.buchungsNr;
-    IF :OLD.buchungsNr NOT IN (
-        SELECT s.buchungsnr FROM stornoBuchung s
-    ) THEN
-        INSERT INTO stornoBuchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
+    INSERT INTO stornoBuchung (sbuchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
         VALUES (:OLD.buchungsNr, :OLD.feWoNr, :OLD.kundenEmail, :OLD.buchungsZeit, :OLD.startTag, :OLD.endTag, SYSDATE, :OLD.rechnungsNr, :OLD.rechnungsDatum, :OLD.betrag, :OLD.bewertText, :OLD.bewertDatum, :OLD.bewertSterne);
-    END IF;
     
 END;
 /
