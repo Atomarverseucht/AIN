@@ -1,4 +1,5 @@
--- löscht alle vorhandenen Tabellen!!!
+-- löscht alle vorhandenen Tabellen und Sessions!!!
+
 BEGIN
    FOR c IN (SELECT table_name FROM user_tables) LOOP
       EXECUTE IMMEDIATE 'DROP TABLE ' || c.table_name || ' CASCADE CONSTRAINTS';
@@ -106,8 +107,7 @@ CREATE TABLE stornoBuchung (
         CHECK (startTag > buchungsZeit),
     endTag DATE NOT NULL,
         CHECK (endTag > startTag + 2),
-    stornoZeit DATE,
-        CHECK (stornoZeit > buchungsZeit),
+    stornoZeit DATE NOT NULL,
     rechnungsNr INTEGER UNIQUE,
     rechnungsDatum DATE,
         CHECK (rechnungsDatum > buchungsZeit),
@@ -389,10 +389,11 @@ VALUES (1, 1, TO_DATE('2025-05-01', 'YYYY-MM-DD'), 200);
 
 INSERT INTO Anzahlung (anzahlungsNr, buchungsNr, zahlungsDatum, betrag) 
 VALUES (2, 2, TO_DATE('2025-05-10', 'YYYY-MM-DD'), 300);
-COMMIT;
 
+
+-- CREATE - Aufgabe 4
 -- TRIGGER
-CREATE TRIGGER loesch_Buchung BEFORE DELETE ON Buchung 
+CREATE OR REPLACE TRIGGER loesch_Buchung BEFORE DELETE ON Buchung 
 FOR EACH ROW BEGIN 
     DELETE Anzahlung a WHERE a.BUCHUNGSNR = :OLD.buchungsNr;
     INSERT INTO stornoBuchung (sbuchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
@@ -401,4 +402,14 @@ FOR EACH ROW BEGIN
 END;
 /
 
-
+CREATE OR REPLACE VIEW KundenStatistik AS 
+    SELECT k.email,
+     NVL(COUNT(b.BETRAG), 0) AS Anzahl_Buchung, 
+     NVL(COUNT(sb.betrag),0) AS Anzahl_storno,
+    NVL(SUM(an.betrag), 0) AS Gezahlter_Betrag
+    FROM Kunde k
+    LEFT OUTER JOIN Buchung b ON b.KUNDENEMAIL = k.email
+    LEFT OUTER JOIN STORNOBUCHUNG sb ON sb.KUNDENEMAIL = k.email
+    LEFT OUTER JOIN ANZAHLUNG an ON an.BUCHUNGSNR = b.buchungsnr
+     GROUP BY k.email;
+COMMIT;

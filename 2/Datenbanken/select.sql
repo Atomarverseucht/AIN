@@ -41,8 +41,22 @@ SELECT fw.name_, AVG(b.BEWERTSTERNE) AS Durchschnitt
         SELECT b1.fewoNR FROM dbsys08.Buchung b1
             WHERE NOT(endtag < TO_DATE('2024-05-01', 'YYYY-MM-DD') OR b1.STARTTAG > (TO_DATE('2024-05-21', 'YYYY-MM-DD'))))
     GROUP BY fw.name_ ORDER BY NVL(Durchschnitt, 0) DESC;
-    
+    -- start = TO_DATE('2025-05-01', 'YYYY-MM-DD'), ende = TO_DATE('2025-05-21', 'YYYY-MM-DD')
+
 -- AB HIER Aufgabe6:
-DELETE FROM Buchung b WHERE b.kundenEmail = 'peter.meyer@example.com'  AND b.ENDTAG < SYSDATE;
-SELECt * FROM Buchung b WHERE b.kundenEmail = 'peter.meyer@example.com' AND b.ENDTAG < SYSDATE;
--- start = TO_DATE('2025-05-01', 'YYYY-MM-DD'), ende = TO_DATE('2025-05-21', 'YYYY-MM-DD')
+-- Anwendung Trigger siehe tables.sql (setup) (A)
+DELETE FROM Buchung b WHERE b.kundenEmail = 'peter.meyer@example.com';
+SELECt * FROM stornoBuchung b WHERE b.kundenEmail = 'peter.meyer@example.com';
+
+-- B: Anwendung kundenstatistik siehe tables.sql
+SELECT * FROM KUNDENSTATISTIK;
+
+-- C: Ferienwohnungen welche von einem Nutzer 5 Sterne bekommen hat, mit dem du min. 1mal dasselbe mit 5 Sternen gegeben hast
+SELECT b1.kundenemail AS Kunde, b2.kundenemail AS Empfehler, fewo.NAME_ AS passende_fewo, b1.FEWONR
+    FROM Ferienwohnung fewo, Buchung b1, Buchung b2, Buchung b3
+    WHERE b1.kundenemail != b2.KUNDENEMAIL AND b2.kundenEmail = b3.kundenEmail ANd b3.feWoNr = fewo.fewoNR
+    AND b1.BEWERTSTERNE = 5 AND b2.bewertSterne = 5 AND b3.bewertSterne = 5
+    AND b1.fewoNR = b2.fewoNR AND b2.fewoNr != b3.fewoNr;
+
+SELECT b.KUNDENEMAIL, b.FEWONR, b.BEWERTSTERNE FROM BUCHUNG b WHERE Bewertsterne = 5; -- zeigt alle 5 Sterne bewertungen an
+
