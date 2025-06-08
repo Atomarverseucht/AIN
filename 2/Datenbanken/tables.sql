@@ -1,4 +1,4 @@
--- löscht alle vorhandenen Tabellen und Sessions!!!
+-- löscht alle vorhandenen Tabellen!!!
 
 BEGIN
    FOR c IN (SELECT table_name FROM user_tables) LOOP
@@ -370,19 +370,19 @@ INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, en
 VALUES (7, 3, 'anna.schmidt@example.com', TO_DATE('2024-06-01', 'YYYY-MM-DD'), TO_DATE('2024-07-20', 'YYYY-MM-DD'), TO_DATE('2024-07-25', 'YYYY-MM-DD'), NULL, 12350, TO_DATE('2025-07-26', 'YYYY-MM-DD'), 750, 'Sehr sauber und gute Lage!', TO_DATE('2025-07-28', 'YYYY-MM-DD'), 5);
 
 INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne) 
-VALUES (8, 1, 'peter.meyer@example.com', TO_DATE('2025-01-10', 'YYYY-MM-DD'), TO_DATE('2025-02-01', 'YYYY-MM-DD'), TO_DATE('2025-02-10', 'YYYY-MM-DD'), NULL, 12351, TO_DATE('2025-02-11', 'YYYY-MM-DD'), 720, 'Gemütlich und günstig!', TO_DATE('2025-02-13', 'YYYY-MM-DD'), 4);
+VALUES (18, 1, 'peter.meyer@example.com', TO_DATE('2025-01-10', 'YYYY-MM-DD'), TO_DATE('2025-02-01', 'YYYY-MM-DD'), TO_DATE('2025-02-10', 'YYYY-MM-DD'), NULL, 12351, TO_DATE('2025-02-11', 'YYYY-MM-DD'), 720, 'Gemütlich und günstig!', TO_DATE('2025-02-13', 'YYYY-MM-DD'), 4);
 
 INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
 VALUES (9, 3, 'max.mustermann@example.com', TO_DATE('2025-09-01', 'YYYY-MM-DD'), TO_DATE('2025-10-01', 'YYYY-MM-DD'), TO_DATE('2025-10-07', 'YYYY-MM-DD'), NULL, 12352, TO_DATE('2025-10-08', 'YYYY-MM-DD'), 900, 'Ruhige Lage, ideal zum Entspannen.', TO_DATE('2025-10-10', 'YYYY-MM-DD'), 5);
 
 INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
-VALUES (10, 2, 'peter.meyer@example.com', TO_DATE('2025-11-10', 'YYYY-MM-DD'), TO_DATE('2025-12-01', 'YYYY-MM-DD'), TO_DATE('2025-12-08', 'YYYY-MM-DD'), NULL, 12353, TO_DATE('2025-12-09', 'YYYY-MM-DD'), 840, 'Etwas veraltet, aber sauber.', TO_DATE('2025-12-12', 'YYYY-MM-DD'), 3);
+VALUES (110, 2, 'peter.meyer@example.com', TO_DATE('2025-11-10', 'YYYY-MM-DD'), TO_DATE('2025-12-01', 'YYYY-MM-DD'), TO_DATE('2025-12-08', 'YYYY-MM-DD'), NULL, 12353, TO_DATE('2025-12-09', 'YYYY-MM-DD'), 840, 'Etwas veraltet, aber sauber.', TO_DATE('2025-12-12', 'YYYY-MM-DD'), 3);
 
 INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
-VALUES (11, 4, 'peter.meyer@example.com', TO_DATE('2025-11-10', 'YYYY-MM-DD'), TO_DATE('2025-12-01', 'YYYY-MM-DD'), TO_DATE('2025-12-08', 'YYYY-MM-DD'), NULL, 9, TO_DATE('2025-12-09', 'YYYY-MM-DD'), 840, '...', TO_DATE('2025-12-12', 'YYYY-MM-DD'), 1);
+VALUES (111, 4, 'peter.meyer@example.com', TO_DATE('2025-11-10', 'YYYY-MM-DD'), TO_DATE('2025-12-01', 'YYYY-MM-DD'), TO_DATE('2025-12-08', 'YYYY-MM-DD'), NULL, 9, TO_DATE('2025-12-09', 'YYYY-MM-DD'), 840, '...', TO_DATE('2025-12-12', 'YYYY-MM-DD'), 1);
 
 INSERT INTO Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
-VALUES (12, 7, 'peter.meyer@example.com', TO_DATE('2025-11-10', 'YYYY-MM-DD'), TO_DATE('2025-12-01', 'YYYY-MM-DD'), TO_DATE('2025-12-08', 'YYYY-MM-DD'), NULL, 10, TO_DATE('2025-12-09', 'YYYY-MM-DD'), 840, '...', TO_DATE('2025-12-12', 'YYYY-MM-DD'), 5);
+VALUES (112, 7, 'peter.meyer@example.com', TO_DATE('2025-11-10', 'YYYY-MM-DD'), TO_DATE('2025-12-01', 'YYYY-MM-DD'), TO_DATE('2025-12-08', 'YYYY-MM-DD'), NULL, 10, TO_DATE('2025-12-09', 'YYYY-MM-DD'), 840, '...', TO_DATE('2025-12-12', 'YYYY-MM-DD'), 5);
 -- Daten für Anzahlung
 INSERT INTO Anzahlung (anzahlungsNr, buchungsNr, zahlungsDatum, betrag) 
 VALUES (1, 1, TO_DATE('2025-05-01', 'YYYY-MM-DD'), 200);
@@ -394,7 +394,8 @@ VALUES (2, 2, TO_DATE('2025-05-10', 'YYYY-MM-DD'), 300);
 -- CREATE - Aufgabe 4
 -- TRIGGER
 CREATE OR REPLACE TRIGGER loesch_Buchung BEFORE DELETE ON Buchung 
-FOR EACH ROW BEGIN 
+FOR EACH ROW 
+BEGIN 
     DELETE Anzahlung a WHERE a.BUCHUNGSNR = :OLD.buchungsNr;
     INSERT INTO stornoBuchung (sbuchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne)
         VALUES (:OLD.buchungsNr, :OLD.feWoNr, :OLD.kundenEmail, :OLD.buchungsZeit, :OLD.startTag, :OLD.endTag, SYSDATE, :OLD.rechnungsNr, :OLD.rechnungsDatum, :OLD.betrag, :OLD.bewertText, :OLD.bewertDatum, :OLD.bewertSterne);
@@ -404,12 +405,11 @@ END;
 
 CREATE OR REPLACE VIEW KundenStatistik AS 
     SELECT k.email,
-     NVL(COUNT(b.BETRAG), 0) AS Anzahl_Buchung, 
-     NVL(COUNT(sb.betrag),0) AS Anzahl_storno,
-    NVL(SUM(an.betrag), 0) AS Gezahlter_Betrag
-    FROM Kunde k
-    LEFT OUTER JOIN Buchung b ON b.KUNDENEMAIL = k.email
-    LEFT OUTER JOIN STORNOBUCHUNG sb ON sb.KUNDENEMAIL = k.email
-    LEFT OUTER JOIN ANZAHLUNG an ON an.BUCHUNGSNR = b.buchungsnr
-     GROUP BY k.email;
+     NVL((SELECT COUNT(b.BETRAG) FROM Buchung b 
+        WHERE b.KUNDENEMAIL = k.email GROUP BY k.email), 0) AS Anzahl_Buchung, 
+     NVL((SELECT COUNT(sb.betrag) FROM STORNOBUCHUNG sb
+        WHERE sb.KUNDENEMAIL = k.email GROUP BY k.email), 0) AS Anzahl_storno,
+     NVL((SELECT SUM(an.betrag) FROM ANZAHLUNG an, Buchung b 
+        WHERE an.BUCHUNGSNR = b.buchungsnr AND b.KUNDENEMAIL = k.email GROUP BY k.email), 0) AS Gezahlter_Betrag
+    FROM Kunde k;
 COMMIT;

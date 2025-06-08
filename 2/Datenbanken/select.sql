@@ -45,8 +45,8 @@ SELECT fw.name_, AVG(b.BEWERTSTERNE) AS Durchschnitt
 
 -- AB HIER Aufgabe6:
 -- Anwendung Trigger siehe tables.sql (setup) (A)
-DELETE FROM Buchung b WHERE b.kundenEmail = 'peter.meyer@example.com';
-SELECt * FROM stornoBuchung b WHERE b.kundenEmail = 'peter.meyer@example.com';
+DELETE FROM Buchung b WHERE b.BUCHUNGSNR = 1;
+SELECt * FROM stornoBuchung b;
 
 -- B: Anwendung kundenstatistik siehe tables.sql
 SELECT * FROM KUNDENSTATISTIK;
