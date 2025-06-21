@@ -16,10 +16,10 @@ public class GUI extends JFrame {
         }
     }
 
-    final JComboBox<String> cLand;
+    //final JComboBox<String> cLand;
     JTextField start = new JTextField();
     JTextField ende = new JTextField();
-    final JComboBox<String> cAusstattung;
+    //final JComboBox<String> cAusstattung;
     List<fwp> fewopa = new LinkedList<>();
 
     public static void main(String[] args) {
@@ -30,10 +30,10 @@ public class GUI extends JFrame {
         this.setTitle("Calculator");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setPreferredSize(new Dimension(100, 100));
-        test();
+        sql_();
     }
 
-    public static void test(){
+    public static void sql_(){
         String name = null;
         String passwd = null;
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -63,8 +63,8 @@ public class GUI extends JFrame {
 
             stmt = conn.createStatement(); 												// Statement-Objekt erzeugen
 
-            String myUpdateQuery = "INSERT INTO pers(pnr, name, jahrg, eindat, gehalt, anr) " +
-                    "VALUES('124', 'Huber', 1980, sysdate, 80000, 'K51')";				// Mitarbeiter hinzufügen
+            String myUpdateQuery = "INSERT INTO dbsys08.Kunde(email, adressNr, name_, vorname, istNewsletter, passwort, iban) " +
+                    "VALUES('lul@email.de', 1, 'Verfahren', 'Horst)";				// Mitarbeiter hinzufügen
             stmt.executeUpdate(myUpdateQuery);
 
             String mySelectQuery = "SELECT pnr, name, jahrg, TO_CHAR(eindat, 'YYYY') " +
