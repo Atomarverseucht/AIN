@@ -1,46 +1,76 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.sql.*;
 import java.io.*;
 
-public class GUI extends JFrame {
-    private class fwp extends JPanel{
-        public final JLabel title;
-        public final double bewertung;
-
-        public fwp(String title, double bewertung){
-            this.title = new JLabel(title);
-            this.bewertung = bewertung;
+public class GUI extends JFrame implements ActionListener {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        switch(e.getActionCommand()){
+            case "Suchen": suchen(); break;
         }
     }
 
-    //final JComboBox<String> cLand;
-    JTextField start = new JTextField();
-    JTextField ende = new JTextField();
-    //final JComboBox<String> cAusstattung;
+    private class fwp extends JPanel{
+        public final JLabel title;
+        public final JLabel bewertung;
+
+        public fwp(String title, double bewertung){
+            this.title = new JLabel(title);
+            this.bewertung = new JLabel(Double.toString(bewertung));
+            this.add(this.title);
+            this.add(this.bewertung);
+        }
+    }
+
+    JComboBox<String> cLand = new JComboBox<>();
+    JTextField start = new JTextField(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+    JTextField ende = new JTextField(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+    JComboBox<String> cAusstattung = new JComboBox<>();
     List<fwp> fewopa = new LinkedList<>();
+    JPanel gui = new JPanel();
+    JButton suchen = new JButton("Suchen");
+    JPanel out = new JPanel();
+
+    // SQL - Zeug
+    String name = null;
+    String passwd = null;
+    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+    Connection conn = null;
+    Statement stmt = null;
+    ResultSet rset = null;
 
     public static void main(String[] args) {
         GUI window = new GUI();
+
     }
 
     public GUI(){
+        String input = "SELECT name_ FROM dbsys08.Ferienwohnung";
+
         this.setTitle("Calculator");
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setPreferredSize(new Dimension(100, 100));
-        sql_();
-    }
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try{
+                    sql_close();
+                    System.exit(0);
+                } catch (Exception ex){
+                    System.out.println("problem");
+                }
+            }
+        });
+        gui.setPreferredSize(new Dimension(100, 100));
 
-    public static void sql_(){
-        String name = null;
-        String passwd = null;
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        Connection conn = null;
-        Statement stmt = null;
-        ResultSet rset = null;
-
+        // SQL Initialization
         try {
             System.out.println("Benutzername: ");
             name = in.readLine();
@@ -63,30 +93,45 @@ public class GUI extends JFrame {
 
             stmt = conn.createStatement(); 												// Statement-Objekt erzeugen
 
-            String myUpdateQuery = "INSERT INTO dbsys08.Kunde(email, adressNr, name_, vorname, istNewsletter, passwort, iban) " +
-                    "VALUES('lul@email.de', 1, 'Verfahren', 'Horst)";				// Mitarbeiter hinzufügen
-            stmt.executeUpdate(myUpdateQuery);
+            // SQL-Abfrage für Länder-Combobox
+            String selectCountries = "SELECT * FROM dbsys08.Land";
+            rset = stmt.executeQuery(selectCountries);
+            while(rset.next()){
+                cLand.addItem(rset.getString("name_"));
+            }
 
-            String mySelectQuery = "SELECT pnr, name, jahrg, TO_CHAR(eindat, 'YYYY') " +
-                    "AS eindat, gehalt, beruf, anr, vnr FROM pers";
-            rset = stmt.executeQuery(mySelectQuery);									// Query ausführen
+                rset = stmt.executeQuery(input);
+                while (rset.next()){
+                    System.out.println(rset.getString("name_"));
+                }
+            String selectAccess = "SELECT * FROM dbsys08.Ausstattung";
+            rset = stmt.executeQuery(selectAccess);
+            cAusstattung.addItem("keine");
+            while(rset.next()){
+                cAusstattung.addItem(rset.getString("name_"));
+            }
 
-            while(rset.next())
-                System.out.println(rset.getInt("pnr") + " "
-                        + rset.getString("name") + " "
-                        + rset.getInt("jahrg") + " "
-                        + rset.getString("eindat") + " "
-                        + rset.getInt("gehalt") + " "
-                        + rset.getString("beruf") + " "
-                        + rset.getString("anr") + " "
-                        + rset.getInt("vnr"));
 
-            myUpdateQuery = "DELETE FROM pers WHERE pnr = '124'";
-            stmt.executeUpdate(myUpdateQuery);											// Mitarbeiter wieder löschen
+            JLabel z1 = new JLabel(" Von:");
+            JLabel z2 = new JLabel(" Bis: ");
+            JPanel in = new JPanel();
+            gui.setLayout(new BoxLayout(gui, BoxLayout.Y_AXIS));
+            in.setLayout(new FlowLayout());
+            in.add(cLand);
+            in.add(cAusstattung);
+            in.add(z1);
+            in.add(start);
+            in.add(z2);
+            in.add(ende);
+            in.add(suchen);
+            gui.add(in);
+            this.add(gui);
+            this.pack();
+            this.setVisible(true);
 
-            stmt.close();																// Verbindung trennen
-            conn.commit();
-            conn.close();
+            suchen.addActionListener(this);
+
+            // SQL - Errors
         } catch (SQLException se) {														// SQL-Fehler abfangen
             System.out.println();
             System.out
@@ -106,4 +151,40 @@ public class GUI extends JFrame {
             System.exit(-1);
         }
     }
+    public void suchen() {
+        try {
+
+            String SQLsuche = "SELECT fw.name_, AVG(b.BEWERTSTERNE) AS Durchschnitt  " +
+                    "FROM dbsys08.Ferienwohnung fw " +
+                    (cAusstattung.getSelectedIndex() != 0 ? "INNER JOIN dbsys08.WOHNUNGSAUSSTATTUNG wa ON fw.FEWONR = wa.FEWONR ":" ") +
+                    "INNER JOIN dbsys08.ADRESSE ad ON fw.adressNr = ad.ADRESSNR " +
+                    "LEFT OUTER JOIN dbsys08.BUCHUNG b ON b.FEWONR = fw.FEWONR " +
+                    "WHERE ad.LANDNAME = '" + cLand.getSelectedItem().toString() +
+                    ((cAusstattung.getSelectedIndex() != 0) ? "' AND wa.AUSSTNAME = '" + cAusstattung.getSelectedItem().toString() +"'": "'") + " AND fw.FEWONR NOT IN ( " +
+                    "SELECT b1.fewoNR FROM dbsys08.Buchung b1 " +
+                    "WHERE NOT(endtag < TO_DATE('" + start.getText() + "', 'DD.MM.YYYY') OR b1.STARTTAG > (TO_DATE('" + ende.getText() + "', 'DD.MM.YYYY')))) " +
+                    "GROUP BY fw.name_ ORDER BY NVL(Durchschnitt, 0) DESC";
+            rset = stmt.executeQuery(SQLsuche);
+            fewopa.clear();
+            gui.remove(out);
+
+            out.removeAll();
+            while (rset.next()){
+                fwp f = new fwp(rset.getString("name_"), rset.getDouble("Durchschnitt"));
+                fewopa.add(f);
+                out.add(f);
+            }
+            out.setVisible(false);
+            gui.add(out);
+            out.setVisible(true);
+        } catch(SQLException sqlEx){
+            System.err.println("SQL Fehler: suchen");
+            System.out.println(sqlEx.getMessage());
+        }
+    }
+        public void sql_close() throws SQLException{
+            stmt.close();                                                                // Verbindung trennen
+            conn.commit();
+            conn.close();
+        }
 }
