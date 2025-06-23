@@ -46,6 +46,7 @@ public class GUI extends JFrame implements ActionListener {
                 rset = stmt.executeQuery(s);
                 System.out.println("Buchung erfolgreich!");
                 this.title.setText("GEBUCHT");
+                suchen();
             } catch(SQLException sqlEx){
                 System.err.println("Buchen konnte nicht durgeführt werden");
                 System.err.println(sqlEx.getMessage());;
