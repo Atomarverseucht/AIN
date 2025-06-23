@@ -19,21 +19,44 @@ public class GUI extends JFrame implements ActionListener {
         }
     }
 
-    private class fwp extends JPanel{
+    private class fwp extends JPanel implements ActionListener{
         public final JLabel title;
         public final JLabel bewertung;
+        public JButton buchen = new JButton("Buchen");
 
         public fwp(String title, double bewertung){
             this.title = new JLabel(title);
             this.bewertung = new JLabel(Double.toString(bewertung));
             this.add(this.title);
             this.add(this.bewertung);
+            this.add(this.buchen);
+            buchen.addActionListener(this);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try{
+                String s = "SELECT MAX(BuchungsNR) FROM dbsys08.Buchung";
+                rset = stmt.executeQuery(s); rset.next();
+                int bNR = rset.getInt(1)+1;
+                s = "SELECT feWoNr FROM dbsys08.Ferienwohnung fw WHERE fw.name_ = '" + title.getText() +"'";
+                rset = stmt.executeQuery(s); rset.next();
+                s = "INSERT INTO dbsys08.Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne) " +
+                        "VALUES ("+ bNR +", "+ rset.getInt(1) +", '"+kundenEmail+"', TO_DATE('"+heute+"', 'DD.MM.YYYY'), TO_DATE('"+start.getText()+"', 'DD.MM.YYYY'), TO_DATE('"+ende.getText()+"', 'DD.MM.YYYY'), NULL, NULL, NULL, 560, NULL, NULL, NULL)";
+                rset = stmt.executeQuery(s);
+                System.out.println("Buchung erfolgreich!");
+                this.title.setText("GEBUCHT");
+            } catch(SQLException sqlEx){
+                System.err.println("Buchen konnte nicht durgeführt werden");
+                System.err.println(sqlEx.getMessage());;
+            }
         }
     }
 
     JComboBox<String> cLand = new JComboBox<>();
-    JTextField start = new JTextField(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-    JTextField ende = new JTextField(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+    String heute = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+    JTextField start = new JTextField(heute);
+    JTextField ende = new JTextField(heute);
     JComboBox<String> cAusstattung = new JComboBox<>();
     List<fwp> fewopa = new LinkedList<>();
     JPanel gui = new JPanel();
@@ -43,6 +66,7 @@ public class GUI extends JFrame implements ActionListener {
     // SQL - Zeug
     String name = null;
     String passwd = null;
+    String kundenEmail = null;
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     Connection conn = null;
     Statement stmt = null;
@@ -54,8 +78,6 @@ public class GUI extends JFrame implements ActionListener {
     }
 
     public GUI(){
-        String input = "SELECT name_ FROM dbsys08.Ferienwohnung";
-
         this.setTitle("Calculator");
         this.addWindowListener(new WindowAdapter() {
             @Override
@@ -72,9 +94,9 @@ public class GUI extends JFrame implements ActionListener {
 
         // SQL Initialization
         try {
-            System.out.println("Benutzername: ");
+            System.out.println("SQL-Benutzername: ");
             name = in.readLine();
-            System.out.println("Passwort:");
+            System.out.println("SQL-Passwort:");
             passwd = in.readLine();
         } catch (IOException e) {
             System.out.println("Fehler beim Lesen der Eingabe: " + e);
@@ -93,6 +115,27 @@ public class GUI extends JFrame implements ActionListener {
 
             stmt = conn.createStatement(); 												// Statement-Objekt erzeugen
 
+            String pw = "";
+            //Kunden-Anmeldung
+            try {
+                while (true){
+                System.out.println("Kundenemail: ");
+                kundenEmail = in.readLine();
+                System.out.println("Passwort:");
+                pw = in.readLine();
+                String s = "SELECT passwort FROM dbsys08.Kunde WHERE Kunde.email = '" + kundenEmail +"'";
+                rset = stmt.executeQuery(s); rset.next();
+                if(pw.equals(rset.getString("passwort"))){
+                    break;
+                }
+                }
+
+            } catch (IOException e) {
+                System.out.println("Fehler beim Lesen der Eingabe: " + e);
+                System.exit(-1);
+            }
+
+
             // SQL-Abfrage für Länder-Combobox
             String selectCountries = "SELECT * FROM dbsys08.Land";
             rset = stmt.executeQuery(selectCountries);
@@ -100,10 +143,6 @@ public class GUI extends JFrame implements ActionListener {
                 cLand.addItem(rset.getString("name_"));
             }
 
-                rset = stmt.executeQuery(input);
-                while (rset.next()){
-                    System.out.println(rset.getString("name_"));
-                }
             String selectAccess = "SELECT * FROM dbsys08.Ausstattung";
             rset = stmt.executeQuery(selectAccess);
             cAusstattung.addItem("keine");
@@ -111,7 +150,8 @@ public class GUI extends JFrame implements ActionListener {
                 cAusstattung.addItem(rset.getString("name_"));
             }
 
-
+            JLabel ke = new JLabel(kundenEmail);
+            gui.add(ke);
             JLabel z1 = new JLabel(" Von:");
             JLabel z2 = new JLabel(" Bis: ");
             JPanel in = new JPanel();
