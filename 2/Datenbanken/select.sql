@@ -32,7 +32,7 @@ SELECT fewoNr FROM dbsys08.Buchung b WHERE fewoNR NOT IN (
     SELECT FEWONR FROM dbsys08.Buchung bu WHERE bu.BEWERTSTERNE > 2);
 
 -- h: spanische fewos mit Sauna, welche zwischen 01.05.2024 - 21.05.2024 frei sind, sortiert nach Bewertung
-SELECT fw.name_, AVG(b.BEWERTSTERNE) AS Durchschnitt 
+SELECT fw.name_, fw.preisPT, AVG(b.BEWERTSTERNE) AS Durchschnitt 
     FROM dbsys08.Ferienwohnung fw
     INNER JOIN dbsys08.WOHNUNGSAUSSTATTUNG wa ON fw.FEWONR = wa.FEWONR
     INNER JOIN dbsys08.ADRESSE ad ON fw.adressNr = ad.ADRESSNR

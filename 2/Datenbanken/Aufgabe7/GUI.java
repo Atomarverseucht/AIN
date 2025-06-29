@@ -22,11 +22,14 @@ public class GUI extends JFrame implements ActionListener {
     private class fwp extends JPanel implements ActionListener{
         public final JLabel title;
         public final JLabel bewertung;
-        public JButton buchen = new JButton("Buchen");
+        public JButton buchen;
+        public final double preis;
 
-        public fwp(String title, double bewertung){
+        public fwp(String title, double bewertung, double preis){
             this.title = new JLabel(title);
             this.bewertung = new JLabel(Double.toString(bewertung));
+            buchen = new JButton(Double.toString(preis)+"€");
+            this.preis = preis;
             this.add(this.title);
             this.add(this.bewertung);
             this.add(this.buchen);
@@ -42,20 +45,30 @@ public class GUI extends JFrame implements ActionListener {
                 s = "SELECT feWoNr FROM dbsys08.Ferienwohnung fw WHERE fw.name_ = '" + title.getText() +"'";
                 rset = stmt.executeQuery(s); rset.next();
                 s = "INSERT INTO dbsys08.Buchung (buchungsNr, feWoNr, kundenEmail, buchungsZeit, startTag, endTag, stornoZeit, rechnungsNr, rechnungsDatum, betrag, bewertText, bewertDatum, bewertSterne) " +
-                        "VALUES ("+ bNR +", "+ rset.getInt(1) +", '"+kundenEmail+"', TO_DATE('"+heute+"', 'DD.MM.YYYY'), TO_DATE('"+start.getText()+"', 'DD.MM.YYYY'), TO_DATE('"+ende.getText()+"', 'DD.MM.YYYY'), NULL, NULL, NULL, 560, NULL, NULL, NULL)";
-                rset = stmt.executeQuery(s);
-                System.out.println("Buchung erfolgreich!");
-                this.title.setText("GEBUCHT");
-                suchen();
+                        "VALUES ("+ bNR +", "+ rset.getInt(1) +", '"+kundenEmail+"', TO_DATE('"+heute+"', 'DD.MM.YYYY'), TO_DATE('"+start.getText()+"', 'DD.MM.YYYY'), TO_DATE('"+ende.getText()+"', 'DD.MM.YYYY'), NULL, NULL, NULL,"+preis+", NULL, NULL, NULL)";
+                if(stmt.executeUpdate(s) ==1) {
+                    System.out.println("Buchung erfolgreich!");
+                    this.title.setText("GEBUCHT");
+                    conn.commit();
+                    suchen();
+                } else{
+                    System.err.println("Buchung nicht erfolgreich!");
+                }
             } catch(SQLException sqlEx){
-                System.err.println("Buchen konnte nicht durgeführt werden");
-                System.err.println(sqlEx.getMessage());;
+                System.err.println("Buchen konnte nicht durgeführt werden ");
+                System.err.println(sqlEx.getMessage());
+                try {
+                    conn.rollback();
+                } catch(SQLException sqlE){
+
+                }
             }
         }
     }
 
     JComboBox<String> cLand = new JComboBox<>();
-    String heute = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+    DateTimeFormatter tFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    String heute = LocalDate.now().format(tFormat);
     JTextField start = new JTextField(heute);
     JTextField ende = new JTextField(heute);
     JComboBox<String> cAusstattung = new JComboBox<>();
@@ -79,7 +92,7 @@ public class GUI extends JFrame implements ActionListener {
     }
 
     public GUI(){
-        this.setTitle("Calculator");
+        this.setTitle("Ferienwohnung");
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -87,11 +100,11 @@ public class GUI extends JFrame implements ActionListener {
                     sql_close();
                     System.exit(0);
                 } catch (Exception ex){
-                    System.out.println("problem");
+                    System.out.println(ex.getMessage());
                 }
             }
         });
-        gui.setPreferredSize(new Dimension(100, 100));
+        gui.setPreferredSize(new Dimension(1000, 1000));
 
         // SQL Initialization
         try {
@@ -118,24 +131,23 @@ public class GUI extends JFrame implements ActionListener {
 
             String pw = "";
             //Kunden-Anmeldung
-            try {
-                while (true){
-                System.out.println("Kundenemail: ");
-                kundenEmail = in.readLine();
-                System.out.println("Passwort:");
-                pw = in.readLine();
-                String s = "SELECT passwort FROM dbsys08.Kunde WHERE Kunde.email = '" + kundenEmail +"'";
-                rset = stmt.executeQuery(s); rset.next();
-                if(pw.equals(rset.getString("passwort"))){
-                    break;
+            while (true){
+                try {
+                    System.out.println("Kundenemail: ");
+                    kundenEmail = in.readLine();
+                    System.out.println("Passwort:");
+                    pw = in.readLine();
+                    String s = "SELECT passwort FROM dbsys08.Kunde WHERE Kunde.email = '" + kundenEmail +"'";
+                    rset = stmt.executeQuery(s); rset.next();
+                    if(pw.equals(rset.getString("passwort"))){
+                        break;
+                    }
+                } catch (IOException e) {
+                    System.out.println("Fehler beim Lesen der Eingabe: " + e);
+                } catch(SQLException sqlEx){
+                    System.out.println("Konto konnte nicht gefunden werden!");
                 }
-                }
-
-            } catch (IOException e) {
-                System.out.println("Fehler beim Lesen der Eingabe: " + e);
-                System.exit(-1);
             }
-
 
             // SQL-Abfrage für Länder-Combobox
             String selectCountries = "SELECT * FROM dbsys08.Land";
@@ -151,7 +163,7 @@ public class GUI extends JFrame implements ActionListener {
                 cAusstattung.addItem(rset.getString("name_"));
             }
 
-            JLabel ke = new JLabel(kundenEmail);
+            JLabel ke = new JLabel("Dein Konto: " + kundenEmail);
             gui.add(ke);
             JLabel z1 = new JLabel(" Von:");
             JLabel z2 = new JLabel(" Bis: ");
@@ -194,8 +206,15 @@ public class GUI extends JFrame implements ActionListener {
     }
     public void suchen() {
         try {
-
-            String SQLsuche = "SELECT fw.name_, AVG(b.BEWERTSTERNE) AS Durchschnitt  " +
+            LocalDate st = LocalDate.parse(this.start.getText(), tFormat);
+            LocalDate end = LocalDate.parse(this.ende.getText(), tFormat);
+            int anzTage = end.compareTo(st);
+            if(anzTage < 2){
+                System.out.println("Zu kurzer Zeitraum!");
+                System.out.println(anzTage);
+                return;
+            }
+            String SQLsuche = "SELECT fw.name_, fw.preisPT, AVG(b.BEWERTSTERNE) AS Durchschnitt  " +
                     "FROM dbsys08.Ferienwohnung fw " +
                     (cAusstattung.getSelectedIndex() != 0 ? "INNER JOIN dbsys08.WOHNUNGSAUSSTATTUNG wa ON fw.FEWONR = wa.FEWONR ":" ") +
                     "INNER JOIN dbsys08.ADRESSE ad ON fw.adressNr = ad.ADRESSNR " +
@@ -204,14 +223,18 @@ public class GUI extends JFrame implements ActionListener {
                     ((cAusstattung.getSelectedIndex() != 0) ? "' AND wa.AUSSTNAME = '" + cAusstattung.getSelectedItem().toString() +"'": "'") + " AND fw.FEWONR NOT IN ( " +
                     "SELECT b1.fewoNR FROM dbsys08.Buchung b1 " +
                     "WHERE NOT(endtag < TO_DATE('" + start.getText() + "', 'DD.MM.YYYY') OR b1.STARTTAG > (TO_DATE('" + ende.getText() + "', 'DD.MM.YYYY')))) " +
-                    "GROUP BY fw.name_ ORDER BY NVL(Durchschnitt, 0) DESC";
+                    "GROUP BY fw.name_, fw.preisPT ORDER BY NVL(Durchschnitt, 0) DESC";
             rset = stmt.executeQuery(SQLsuche);
             fewopa.clear();
             gui.remove(out);
+            conn.commit();
 
             out.removeAll();
             while (rset.next()){
-                fwp f = new fwp(rset.getString("name_"), rset.getDouble("Durchschnitt"));
+                String name = rset.getString("name_");
+                double ds = rset.getDouble("Durchschnitt");
+                double preis = (double) (rset.getInt("preisPT") * anzTage) / 100;
+                fwp f = new fwp(name, ds, preis);
                 fewopa.add(f);
                 out.add(f);
             }
@@ -221,6 +244,9 @@ public class GUI extends JFrame implements ActionListener {
         } catch(SQLException sqlEx){
             System.err.println("SQL Fehler: suchen");
             System.out.println(sqlEx.getMessage());
+            sqlEx.printStackTrace();
+        } catch(NumberFormatException nfe){
+            System.out.println("Fehlerhafte Eingabe!");
         }
     }
         public void sql_close() throws SQLException{
