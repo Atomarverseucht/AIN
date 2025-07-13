@@ -30,3 +30,5 @@ bin/
 
 **/doc/
 AIN.iml
+.idea/
+**/prüfung/
