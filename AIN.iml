@@ -7,7 +7,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/2/Datenbanken/Aufgabe7" isTestSource="false" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.13 (PyCharmLearningProject)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="ojdbc-17" level="application" />
     <orderEntry type="library" exported="" name="scala-sdk-3.7.3" level="application" />
