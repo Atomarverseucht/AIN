@@ -11,8 +11,8 @@ print(numpy.std(ninjago, axis=1, ddof=1))
 
 color = (['yellow', 'red', 'blue', 'green'])
 farbe = (['gelb', 'rot', 'blau', 'grün'])
-#for i in range(0,4):
-    # plt.scatter(numpy.full((1,ninjago[i].size), i), ninjago[i], color=color[i])
-plt.boxplot(ninjago.transpose())
+for i in range(0,4):
+    plt.scatter(numpy.full((1,ninjago[i].size), i), ninjago[i], color=color[i])
+#plt.boxplot(ninjago.transpose())
 xticks(range(1, 5), farbe)
 plt.show()
