@@ -1,0 +1,14 @@
+frame width: 640.0
+frame height: 480.0
+--------------------------------
+brightness: 128.0
+contrast: 32.0
+saturation: 32.0
+--------------------------------
+gain: 0.0
+exposure: -6.0
+--------------------------------
+white balance: 1.0
+
+Abstand kamera 32.5cm
+Bild gespeichert.
