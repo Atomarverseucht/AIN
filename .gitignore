@@ -35,3 +35,4 @@ AIN.iml
 **/probeprüfung/
 *.csv
 *.pdf
+*.npy
