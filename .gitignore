@@ -34,5 +34,6 @@ AIN.iml
 **/prüfung/
 **/probeprüfung/
 *.csv
+!mundharmonika.csv
 *.pdf
 *.npy
