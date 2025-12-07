@@ -36,4 +36,5 @@ AIN.iml
 *.csv
 !mundharmonika.csv
 *.pdf
+*.zip
 *.npy
