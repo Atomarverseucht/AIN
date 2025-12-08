@@ -10,7 +10,7 @@ CHUNK = 1024         # Frames pro Buffer
 RECORD_SECONDS = 5   # Länge der Aufnahme
 
 for i in range(0,5):
-    OUTPUT_FILE = f"rechtst{i}.npy"
+    OUTPUT_FILE = f"test{i}.npy"
 
     p = pyaudio.PyAudio()
 
@@ -30,7 +30,7 @@ for i in range(0,5):
 
     print("Aufnahme beendet.")
 
-# Stream schließen
+    # Stream schließen
     stream.stop_stream()
     stream.close()
     p.terminate()
@@ -42,6 +42,4 @@ for i in range(0,5):
     np.save(OUTPUT_FILE, audio_data)
 
     print(f"Gespeichert als {OUTPUT_FILE}")
-    plt.plot(range(0, audio_data.size), audio_data)
-    plt.show()
 print("aufnahme ende")
